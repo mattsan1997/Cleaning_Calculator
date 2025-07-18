@@ -42,6 +42,7 @@
     { "name": "Dry wipe inside of Cabinets & Drawers in Bath (.15-TBD)", "id": "dryInsideCabinetsBath", "initial_basic": 0.15, "subsequent_basic": 0.15, "initial_detailed": 0.15, "subsequent_detailed": 0.15 },
     { "name": "Wet wipe inside of Cabinets & Drawers in Bath (.25-TBD)", "id": "wetInsideCabinetsBath", "initial_basic": 0.25, "subsequent_basic": 0.25, "initial_detailed": 0.25, "subsequent_detailed": 0.25 },
     { "name": "Dry wipe inside of Cabinets & Drawers in Kitchen (.5-TBD)", "id": "dryInsideCabinetsKitchen", "initial_basic": 0.5, "subsequent_basic": 0.5, "initial_detailed": 0.55, "subsequent_detailed": 0.5 },
+    { "name": "TESTER TESTING ADD ON", "id": "testaddon", "initial_basic": 2.0, "subsequent_basic": 1.0, "initial_detailed": 2.5, "subsequent_detailed": 1.5 }
     { "name": "Wet wipe inside of Cabinets & Drawers in Kitchen (1.0)", "id": "wetInsideCabinetsKitchen", "initial_basic": 1.0, "subsequent_basic": 1.0, "initial_detailed": 1.0, "subsequent_detailed": 1.0 }
   ]
 }
