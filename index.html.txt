@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cleaning Rate Calculator</title>
+    <!-- Tailwind CSS CDN for easy styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            /* Light pastel pink background for the body */
+            background-color: #FCE4EC; /* Very light pink */
+        }
+        /* Custom scrollbar for better aesthetics */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #F8BBD0; /* A slightly darker pastel pink for the track */
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #E91E63; /* A more vibrant pink for the thumb */
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #C2185B; /* Darker pink on hover */
+        }
+    </style>
+</head>
+<body class="p-4 sm:p-6 md:p-8 flex items-center justify-center min-h-screen">
+    <div class="bg-white p-6 sm:p-8 rounded-xl shadow-lg w-full max-w-2xl">
+        <h1 class="text-3xl font-bold text-center text-gray-800 mb-6">Cleaning Rate Calculator</h1>
+
+        <!-- Clean Type Selection (Pastel Blue) -->
+        <div class="mb-6 p-4 bg-blue-100 rounded-lg shadow-inner">
+            <h2 class="text-xl font-semibold text-blue-800 mb-4">1. Select Clean Type</h2>
+            <div class="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-4">
+                <!-- Applied hover effect and updated text color for consistency -->
+                <label class="inline-flex items-center cursor-pointer bg-white p-3 rounded-lg shadow-md hover:shadow-lg hover:bg-blue-200 transition-colors duration-200">
+                    <input type="radio" name="cleanType" value="basic" checked class="form-radio h-5 w-5 text-pink-500 border-gray-300 focus:ring-pink-400 rounded-full">
+                    <span class="ml-3 text-lg font-medium text-blue-800">Basic Sanitary Clean</span>
+                </label>
+                <label class="inline-flex items-center cursor-pointer bg-white p-3 rounded-lg shadow-md hover:shadow-lg hover:bg-blue-200 transition-colors duration-200">
+                    <input type="radio" name="cleanType" value="detailed" class="form-radio h-5 w-5 text-pink-500 border-gray-300 focus:ring-pink-400 rounded-full">
+                    <span class="ml-3 text-lg font-medium text-blue-800">Detailed Deep Clean</span>
+                </label>
+            </div>
+        </div>
+
+        <!-- Room Inputs (Pastel Green) -->
+        <div class="mb-6 p-4 bg-green-100 rounded-lg shadow-inner">
+            <h2 class="text-xl font-semibold text-green-800 mb-4">2. Enter Number of Rooms</h2>
+            <div id="roomInputs" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <!-- Room inputs will be dynamically generated here by JS -->
+            </div>
+        </div>
+
+        <!-- Add-on Checkboxes (Pastel Yellow) -->
+        <div class="mb-6 p-4 bg-yellow-100 rounded-lg shadow-inner">
+            <h2 class="text-xl font-semibold text-yellow-800 mb-4">3. Select Add-ons</h2>
+            <div id="addOnCheckboxes" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <!-- Add-on checkboxes will be dynamically generated here by JS -->
+            </div>
+        </div>
+
+        <!-- Calculate Button (Pink Gradient) -->
+        <button id="calculateBtn" class="w-full bg-gradient-to-r from-pink-400 to-pink-600 text-white py-3 rounded-lg text-xl font-semibold shadow-md hover:shadow-lg transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:ring-opacity-75">
+            Calculate Estimate
+        </button>
+
+        <!-- Results Section (Pastel Pink) -->
+        <div id="results" class="mt-8 p-6 bg-pink-100 rounded-xl shadow-inner hidden">
+            <h2 class="text-2xl font-bold text-gray-800 mb-4 text-center">Estimated Clean Time & Price</h2>
+
+            <div class="mb-4">
+                <h3 class="text-xl font-semibold text-gray-700 mb-2">Initial Clean:</h3>
+                <p class="text-lg text-gray-900">Time: <span id="initialTime" class="font-bold">0 hrs</span></p>
+                <p class="text-lg text-gray-900">Price: <span id="initialPrice" class="font-bold">$0.00</span></p>
+            </div>
+
+            <div>
+                <h3 class="text-xl font-semibold text-gray-700 mb-2">Subsequent Clean:</h3>
+                <p class="text-lg text-gray-900">Time: <span id="subsequentTime" class="font-bold">0 hrs</span></p>
+                <p class="text-lg text-gray-900">Price: <span id="subsequentPrice" class="font-bold">$0.00</span></p>
+            </div>
+        </div>
+
+        <!-- Message Box for alerts (Pastel Pink) -->
+        <div id="messageBox" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+            <div class="bg-pink-50 p-6 rounded-lg shadow-xl max-w-sm w-full text-center">
+                <p id="messageText" class="text-lg font-medium text-gray-800 mb-4"></p>
+                <button id="closeMessageBox" class="bg-pink-500 hover:bg-pink-600 text-white px-4 py-2 rounded-md transition-colors duration-200">OK</button>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // Function to display custom message box
+        function showMessageBox(message) {
+            document.getElementById('messageText').textContent = message;
+            document.getElementById('messageBox').classList.remove('hidden');
+        }
+
+        // Close message box
+        document.getElementById('closeMessageBox').addEventListener('click', () => {
+            document.getElementById('messageBox').classList.add('hidden');
+        });
+
+        // Define cleaning rates based on the provided PDF
+        // All times are in hours
+        const cleaningRates = {
+            hourlyRate: 50, // Hourly rate as specified by the user
+
+            rooms: [
+                { name: "Bedrooms", id: "bedrooms", initial_basic: 0.75, subsequent_basic: 0.5, initial_detailed: 0.75, subsequent_detailed: 0.5 },
+                { name: "Master Bathrooms", id: "masterBathrooms", initial_basic: 2.25, subsequent_basic: 1.5, initial_detailed: 2.75, subsequent_detailed: 1.75 },
+                { name: "Guest Bathrooms", id: "guestBathrooms", initial_basic: 1.25, subsequent_basic: 1, initial_detailed: 1.75, subsequent_detailed: 1.25 },
+                { name: "Half Bathrooms", id: "halfBathrooms", initial_basic: 0.75, subsequent_basic: 0.5, initial_detailed: 0.75, subsequent_detailed: 0.5 },
+                { name: "Living Area", id: "livingArea", initial_basic: 0.5, subsequent_basic: 0.5, initial_detailed: 0.5, subsequent_detailed: 0.5 },
+                { name: "Dining Area", id: "diningArea", initial_basic: 0.75, subsequent_basic: 0.5, initial_detailed: 0.75, subsequent_detailed: 0.5 },
+                { name: "Kitchen", id: "kitchen", initial_basic: 1.75, subsequent_basic: 1.25, initial_detailed: 1.75, subsequent_detailed: 3 }, // Note: Detailed Subsequent is 3 in PDF
+                { name: "Laundry Room", id: "laundryRoom", initial_basic: 0.33, subsequent_basic: 0.15, initial_detailed: 0.25, subsequent_detailed: 0.5 },
+                { name: "Office Spaces", id: "officeSpaces", initial_basic: 0.75, subsequent_basic: 0.15, initial_detailed: 0.25, subsequent_detailed: 0.5 }
+            ],
+            addOns: [
+                { name: "Bed Making", id: "bedMaking", initial_basic: 0.25, subsequent_basic: 0.25, initial_detailed: 0.25, subsequent_detailed: 0.25 },
+                { name: "Glass Shower Door", id: "glassShowerDoor", initial_basic: 0.25, subsequent_basic: 0.15, initial_detailed: 0.25, subsequent_detailed: 0.15 },
+                { name: "Water Treatment Needed (Hard)", id: "waterTreatmentNeeded", initial_basic: 0.15, subsequent_basic: 0.15, initial_detailed: 0.15, subsequent_detailed: 0.15 },
+                { name: "Self Standing (separate) Tub", id: "selfStandingTub", initial_basic: 0.25, subsequent_basic: 0.15, initial_detailed: 0.25, subsequent_detailed: 0.15 },
+                { name: "Shower Track Treatment Needed", id: "showerTrackTreatment", initial_basic: 0.25, subsequent_basic: 0.15, initial_detailed: 0.15, subsequent_detailed: 0.25 },
+                // Baseboards are per 1000 sq ft in PDF, treating as fixed add-ons for simplicity on mobile.
+                // If specific sq ft input is needed, this would require a more complex input field.
+                { name: "Baseboards (Dry Wipe) / 1000 sf", id: "baseboardsDryWipe", initial_basic: 0.00075, subsequent_basic: 0.75, initial_detailed: 0.75, subsequent_detailed: 0.75 },
+                { name: "Baseboards (Wet Wipe) / 1000 sf", id: "baseboardsWetWipe", initial_basic: 0.00125, subsequent_basic: 1.25, initial_detailed: 1.25, subsequent_detailed: 1.25 },
+                { name: "Plastic Blinds (Dry Wipe) / set of 2", id: "plasticBlindsDry", initial_basic: 0.25, subsequent_basic: 0.25, initial_detailed: 0.25, subsequent_detailed: 0.25 },
+                { name: "Plastic Blinds (Wet Wipe) / set of 2", id: "plasticBlindsWet", initial_basic: 0.5, subsequent_basic: 0.5, initial_detailed: 0.5, subsequent_detailed: 0.5 },
+                { name: "Wood Blinds (Dry Wipe) / set of 2", id: "woodBlindsDry", initial_basic: 0.15, subsequent_basic: 0.15, initial_detailed: 0.15, subsequent_detailed: 0.15 },
+                { name: "Wood Blinds (Wet Wipe) / set of 2", id: "woodBlindsWet", initial_basic: 0.25, subsequent_basic: 0.25, initial_detailed: 0.25, subsequent_detailed: 0.25 },
+                { name: "Spot Wall Cleaning / TBD", id: "spotWallCleaning", initial_basic: 0, subsequent_basic: 0, initial_detailed: 0, subsequent_detailed: 0 }, // PDF shows 0 for initial/subsequent, TBD for detailed. Keeping 0.
+                { name: "Shower Restoration / 3-5 hours", id: "showerRestoration", initial_basic: 0, subsequent_basic: 0, initial_detailed: 0, subsequent_detailed: 0 }, // PDF shows 0 for initial/subsequent, 3-5 hours for detailed. Keeping 0, user can manually adjust for this.
+                { name: "Paint Removal on Floor / room", id: "paintRemovalFloor", initial_basic: 0.5, subsequent_basic: 0.5, initial_detailed: 0.55, subsequent_detailed: 0.55 },
+                { name: "Excessive Tidying / room", id: "excessiveTidying", initial_basic: 0.5, subsequent_basic: 0.5, initial_detailed: 0.55, subsequent_detailed: 0.55 },
+                { name: "Excessive Stickies (On Floors) / room", id: "excessiveStickies", initial_basic: 0, subsequent_basic: 0, initial_detailed: 0.5, subsequent_detailed: 0.5 },
+                { name: "Grout Treatment / shower", id: "groutTreatment", initial_basic: 0.25, subsequent_basic: 0.5, initial_detailed: 0.55, subsequent_detailed: 0.55 },
+                { name: "Inside of Refrigerator (1-2)", id: "insideRefrigerator", initial_basic: 2, subsequent_basic: 2, initial_detailed: 2, subsequent_detailed: 2 }, // PDF says "estimate" and "Included in" for detailed, assuming 2 hours for now.
+                { name: "Inside of Oven (.5-.75)", id: "insideOven", initial_basic: 0.5, subsequent_basic: 0.5, initial_detailed: 0.55, subsequent_detailed: 0.75 },
+                { name: "Wet Wiping High Light Fixtures / Light Fixture", id: "wetWipingLightFixtures", initial_basic: 0.15, subsequent_basic: 0.15, initial_detailed: 0.15, subsequent_detailed: 0.15 },
+                { name: "Inside of Washer (.15-TBD)", id: "insideWasher", initial_basic: 0.15, subsequent_basic: 0.15, initial_detailed: 0.15, subsequent_detailed: 0.15 },
+                { name: "Inside of Dryer (.15-TBD)", id: "insideDryer", initial_basic: 0.15, subsequent_basic: 0.15, initial_detailed: 0.15, subsequent_detailed: 0.15 },
+                { name: "Inside of Dishwasher", id: "insideDishwasher", initial_basic: 0.5, subsequent_basic: 0.5, initial_detailed: 0.5, subsequent_detailed: 0.5 },
+                { name: "Dry wipe outside of Cabinets & Drawers in Bath (.15-TBD)", id: "dryOutsideCabinetsBath", initial_basic: 0.15, subsequent_basic: 0.15, initial_detailed: 0.15, subsequent_detailed: 0.15 },
+                { name: "Wet wipe outside of Cabinets & Drawers in Bath (.25-TBD)", id: "wetOutsideCabinetsBath", initial_basic: 0.25, subsequent_basic: 0.25, initial_detailed: 0.25, subsequent_detailed: 0.25 },
+                { name: "Dry wipe outside of Cabinets & Drawers in Kitchen (.25-TBD)", id: "dryOutsideCabinetsKitchen", initial_basic: 0.25, subsequent_basic: 0.25, initial_detailed: 0.25, subsequent_detailed: 0.25 },
+                { name: "Wet wipe outside of Cabinets & Drawers in Kitchen (1.0)", id: "wetOutsideCabinetsKitchen", initial_basic: 1.0, subsequent_basic: 1.0, initial_detailed: 1.0, subsequent_detailed: 1.0 },
+                { name: "Dry wipe inside of Cabinets & Drawers in Bath (.15-TBD)", id: "dryInsideCabinetsBath", initial_basic: 0.15, subsequent_basic: 0.15, initial_detailed: 0.15, subsequent_detailed: 0.15 },
+                { name: "Wet wipe inside of Cabinets & Drawers in Bath (.25-TBD)", id: "wetInsideCabinetsBath", initial_basic: 0.25, subsequent_basic: 0.25, initial_detailed: 0.25, subsequent_detailed: 0.25 },
+                { name: "Dry wipe inside of Cabinets & Drawers in Kitchen (.5-TBD)", id: "dryInsideCabinetsKitchen", initial_basic: 0.5, subsequent_basic: 0.5, initial_detailed: 0.55, subsequent_detailed: 0.5 },
+                { name: "Wet wipe inside of Cabinets & Drawers in Kitchen (1.0)", id: "wetInsideCabinetsKitchen", initial_basic: 1.0, subsequent_basic: 1.0, initial_detailed: 1.0, subsequent_detailed: 1.0 }
+            ]
+        };
+
+        // Get DOM elements
+        const roomInputsDiv = document.getElementById('roomInputs');
+        const addOnCheckboxesDiv = document.getElementById('addOnCheckboxes');
+        const cleanTypeRadios = document.querySelectorAll('input[name="cleanType"]');
+        const calculateBtn = document.getElementById('calculateBtn');
+        const resultsDiv = document.getElementById('results');
+        const initialTimeSpan = document.getElementById('initialTime');
+        const initialPriceSpan = document.getElementById('initialPrice');
+        const subsequentTimeSpan = document.getElementById('subsequentTime');
+        const subsequentPriceSpan = document.getElementById('subsequentPrice');
+
+        // Function to generate room input fields
+        function generateRoomInputs() {
+            roomInputsDiv.innerHTML = ''; // Clear existing inputs
+            cleaningRates.rooms.forEach(room => {
+                const div = document.createElement('div');
+                // Applied hover effect and updated text color for consistency
+                div.className = 'flex items-center justify-between bg-white p-3 rounded-lg shadow-sm cursor-pointer hover:bg-green-200 transition-colors duration-200';
+                div.innerHTML = `
+                    <label for="${room.id}" class="font-medium text-green-800 text-base sm:text-lg">${room.name}:</label>
+                    <input type="number" id="${room.id}" min="0" value="0" class="w-20 p-2 border border-gray-300 rounded-md focus:ring-pink-400 focus:border-pink-400 text-center text-lg">
+                `;
+                roomInputsDiv.appendChild(div);
+            });
+        }
+
+        // Function to generate add-on checkboxes
+        function generateAddOnCheckboxes() {
+            addOnCheckboxesDiv.innerHTML = ''; // Clear existing checkboxes
+            cleaningRates.addOns.forEach(addOn => {
+                const div = document.createElement('div');
+                // Applied hover effect and slightly bolder text color for better styling
+                div.className = 'flex items-center bg-white p-3 rounded-lg shadow-sm cursor-pointer hover:bg-yellow-200 transition-colors duration-200';
+                div.innerHTML = `
+                    <input type="checkbox" id="${addOn.id}" class="form-checkbox h-5 w-5 text-pink-500 border-gray-300 focus:ring-pink-400 rounded">
+                    <label for="${addOn.id}" class="ml-3 font-medium text-yellow-800 text-base sm:text-lg cursor-pointer">${addOn.name}</label>
+                `;
+                addOnCheckboxesDiv.appendChild(div);
+            });
+        }
+
+        // Initialize inputs on page load
+        generateRoomInputs();
+        generateAddOnCheckboxes();
+
+        // Function to calculate total time and price
+        function calculateEstimates() {
+            let selectedCleanType = document.querySelector('input[name="cleanType"]:checked').value;
+
+            let totalInitialTime = 0;
+            let totalSubsequentTime = 0;
+
+            // Calculate time for rooms
+            cleaningRates.rooms.forEach(room => {
+                const quantity = parseInt(document.getElementById(room.id).value) || 0;
+                if (selectedCleanType === 'basic') {
+                    totalInitialTime += quantity * room.initial_basic;
+                    totalSubsequentTime += quantity * room.subsequent_basic;
+                } else { // detailed
+                    totalInitialTime += quantity * room.initial_detailed;
+                    totalSubsequentTime += quantity * room.subsequent_detailed;
+                }
+            });
+
+            // Calculate time for add-ons
+            cleaningRates.addOns.forEach(addOn => {
+                const isSelected = document.getElementById(addOn.id).checked;
+                if (isSelected) {
+                    if (selectedCleanType === 'basic') {
+                        totalInitialTime += addOn.initial_basic;
+                        totalSubsequentTime += addOn.subsequent_basic;
+                    } else { // detailed
+                        totalInitialTime += addOn.initial_detailed;
+                        totalSubsequentTime += addOn.subsequent_detailed;
+                    }
+                }
+            });
+
+            // Calculate prices
+            const initialPrice = totalInitialTime * cleaningRates.hourlyRate;
+            const subsequentPrice = totalSubsequentTime * cleaningRates.hourlyRate;
+
+            // Display results
+            initialTimeSpan.textContent = `${totalInitialTime.toFixed(2)} hrs`;
+            initialPriceSpan.textContent = `$${initialPrice.toFixed(2)}`;
+            subsequentTimeSpan.textContent = `${totalSubsequentTime.toFixed(2)} hrs`;
+            subsequentPriceSpan.textContent = `$${subsequentPrice.toFixed(2)}`;
+
+            resultsDiv.classList.remove('hidden'); // Show results section
+        }
+
+        // Event listener for the calculate button
+        calculateBtn.addEventListener('click', calculateEstimates);
+
+        // Optional: Recalculate on input change for real-time feedback (can be resource intensive for many inputs)
+        // For simplicity and performance on mobile, we'll stick to a single calculate button.
+        // If real-time update is desired, uncomment and adjust the following:
+        /*
+        roomInputsDiv.addEventListener('input', calculateEstimates);
+        addOnCheckboxesDiv.addEventListener('change', calculateEstimates);
+        cleanTypeRadios.forEach(radio => radio.addEventListener('change', calculateEstimates));
+        */
+    </script>
+</body>
+</html>
